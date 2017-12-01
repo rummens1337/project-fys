@@ -1,0 +1,82 @@
+
+body {
+    background-color: lightyellow;
+    margin: 0px;
+    padding: 0px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #cc3300;
+}
+
+li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    height: 20px;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover {
+    background-color: #ffcc66;
+}
+
+.active {
+    background-color: #992600;
+}
+
+h1 {
+	font-size: 40px;
+	color: #cc3300;
+	text-shadow: 2px 1px 1px red;
+}
+
+p {
+	font-size: 18px;
+}
+
+div.gallerij {
+    margin: 5px;
+    border: 1px solid #ccc;
+    float: left;
+    width: 180px;
+}
+
+div.gallerij:hover {
+    border: 1px solid #777;
+}
+
+div.gallerij img {
+    width: 100%;
+    height: auto;
+}
+
+div.desc {
+    padding: 15px;
+    text-align: center;
+}
+
+.footer {
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+   padding: 0;
+   background-color: #cc3300;
+   color: white;
+   text-align: center;
+}
+
+.t-image {
+    position: relative; 
+    top: -5px; 
+}
