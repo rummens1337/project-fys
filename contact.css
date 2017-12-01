@@ -1,0 +1,61 @@
+
+body {
+    background-color: lightyellow;
+    margin: 0px;
+    padding: 0px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #cc3300;
+}
+
+li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    height: 20px;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover {
+    background-color: #ffcc66;
+}
+
+.active {
+    background-color: #992600;
+}
+
+legend { 
+    display: block;
+    padding-left: 2px;
+    padding-right: 2px;
+    border: none;
+	font-size: 30px;
+	font-weight: bold;
+
+}
+
+.footer {
+   position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+   padding: 0;
+   background-color: #cc3300;
+   color: white;
+   text-align: center;
+}
+
+.t-image {
+    position: relative; 
+    top: -5px; 
+}	
