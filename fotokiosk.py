@@ -10,6 +10,7 @@ from Phidget22.PhidgetException import *
 from Phidget22.Phidget import *
 from Phidget22 import *
 from Phidget22.Devices.DigitalInput import *
+import requests
 
 #maakt de foto, slaat deze op d.m.v. output.
 def take_picture():
@@ -18,9 +19,6 @@ def take_picture():
     print("take a picture")
     camera.capture(output)
     camera.stop_preview()
-    
-def save_picture():
-    
     
 #bekijkt de status van de digital input ( = 0 of 1 )
 #als input > 0: maak foto, stop opvragen input.
@@ -37,7 +35,6 @@ def onAttachHandler(e):
     
 #waar de foto opgeslagen wordt, ook de huidige tijd wordt opgeslagen.    
 output = ""
-
 #maakt een nieuwe window met de resolutie 800 480
 app = App("De Fotokiosk", 800, 480)
 message = Text(app, "IT103    groep2")
@@ -58,6 +55,10 @@ ch.setOnAttachHandler(onAttachHandler)
 ch.setOnStateChangeHandler(onStateChangeHandler)
 ch.open()
 #Tot hier
-
 app.display()
 
+url = 'http://rummens1337.nl/includes/upload.inc.php'
+files = {'file': open(output,'rb')}
+values = {'submit': 1}
+r = requests.post(url, data=values, files=files)
+print (r.text)
