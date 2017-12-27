@@ -1,4 +1,4 @@
-class sendmail:
+class Sendmail:
     def __init__(self,email,subject,filename,code):
         import smtplib
         from email.mime.text import MIMEText
@@ -37,7 +37,7 @@ foto op de volgende manier verkrijgen:
         part = MIMEBase('application','octect-stream')
         part.set_payload((attachment).read())
         encoders.encode_base64(part)
-        part.add_header('Content-Disposition',"attachment; filename= "+filename)
+        part.add_header('Content-Disposition',"attachment; filename= Corendon.jpg")
 
         msg.attach(part)
         text = msg.as_string()
