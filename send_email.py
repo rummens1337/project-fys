@@ -1,5 +1,5 @@
 class Sendmail:
-    def __init__(self,email,subject,filename,code):
+    def __init__(self,email,subject,filename,code,taal):
         import smtplib
         from email.mime.text import MIMEText
         from email.mime.multipart import MIMEMultipart
@@ -18,17 +18,33 @@ class Sendmail:
         msg['To'] = self.email_to
         msg['Subject'] = self.subject
 
-        body = ('''
+        if(taal == 1):
+            body = ('''
 Bedankt voor het gebruiken van de fotokiosk!
 Uw foto is als bijlage toegevoegd in deze E-mail.
         
-Mocht de foto niet als bijlage zijn toegevoegd dan kunt u de
+Mocht de foto niet als bijlage zijn toegevoegd, dan kunt u de
 foto op de volgende manier verkrijgen:
 1. Noteer deze code: ''' + code + '''
 2. Ga naar: www.rummens1337.nl
 3. Voer uw code in
 4. Download uw foto
-        ''')
+            ''')
+        else:
+            body = ('''
+Thank you for using the photobooth!
+Your photo is added as an attachment in this E-mail.
+        
+If somehow the photo is not added as an attachment,
+You can download your photo by following these steps:
+1. Write down this code: ''' + code + '''
+2. Go to: www.rummens1337.nl
+3. Enter your code
+4. Download your photo
+            ''')
+            
+            
+            
         msg.attach(MIMEText(body,'plain'))
 
         filename = self.filename
