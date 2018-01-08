@@ -6,10 +6,12 @@ from importskiosk import *
 #de gebruiker weer op een vers scherm begint.
 def terug_naar_begin():
     global next
+    global mail
     sys.path.insert(0,"/home/pi/fotokiosk")
     os.system("rm *.png")
     raise_frame(eersteFrame)
     next = 0;
+    mail.set('')
     
 #start camera, en checkt of er op next is gedrukt.
 #next wordt vervolgens gecheckt in take_picture()
@@ -53,7 +55,7 @@ def take_picture():
     #Wanneer er een foto wordt gemaakt controlleert dit of er wel op next is gedrukt,
     #en dus of degene niet op de knop drukt terwijl hij zichzelf nog niet zag.
     if(next != 1):
-        terug_naar_begin()    
+        terug_naar_begin()
 
 #Stuurt een postrequest naar de website, de php code op de server haalt de foto
 #op de juiste manier binnen, en zet deze in de database.
@@ -107,6 +109,7 @@ root.title("Corendon Fotokiosk")
 #variabelen die nodig zijn
 nlVlag = PhotoImage(file="netherlands-Flag.jpg")
 enVlag = PhotoImage(file="united-Kingdom-flag-icon.jpg")
+logo = PhotoImage(file="corendonTransparant.jpg")
 camera = PiCamera()
 camera.resolution = (800, 480)
 camera.hflip = True
@@ -153,6 +156,7 @@ Radiobutton(eersteFrame, text="Nederlands", value=1, variable=btn1, image=nlVlag
 Radiobutton(eersteFrame, text="Engels", value=2, variable=btn1, image=enVlag, indicatoron=0).place(x=436, y=150)
 nextKnop = Button(eersteFrame, text='Next', command=lambda:start_preview()).place(x=700, y=200)  
 Label(eersteFrame, text='Choose your language').place(x=345, y=60)
+#Button(eersteFrame, text='Make picture',command=lambda:take_picture()).place(x=200,y=200)
 
 #Frame nederlandsStapEen
 '''De labels en buttons worden aangemaakt in "def take_picture()"'''
@@ -160,7 +164,6 @@ Label(eersteFrame, text='Choose your language').place(x=345, y=60)
 #Frame nederlandsStapTwee
 Label(nederlandsStapTwee, text='FRAME 4')
 Button(nederlandsStapTwee, text='Goto to frame 1', command=lambda:raise_frame(eersteFrame))
-logo = PhotoImage(file="corendonTransparant.jpg")
 Label(nederlandsStapTwee, image=logo).place(x=150, y=50)
 Label(nederlandsStapTwee, text="U kunt uw foto terugvinden op www.rummens1337.nl").place(x=20, y=250)
 Label(nederlandsStapTwee, text="door onderstaande code op de website in te voeren").place(x=25, y=268)
@@ -176,7 +179,6 @@ Button(nederlandsStapTwee, text="Volgende", command=terug_naar_begin).place(x=40
 #Frame engelsStapTwee
 Label(engelsStapTwee, text='FRAME 4')
 Button(engelsStapTwee, text='Goto to frame 1', command=lambda:raise_frame(eersteFrame))
-logo = PhotoImage(file="corendonTransparant.jpg")
 Label(engelsStapTwee, image=logo).place(x=150, y=50)
 Label(engelsStapTwee, text="You can find your photo @ www.rummens1337.nl").place(x=20, y=250)
 Label(engelsStapTwee, text="By entering your personal code").place(x=25, y=268)
