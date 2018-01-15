@@ -1,11 +1,14 @@
 #importeert alle nodige libraries.
 #de python libraries staan opgeslagen in /usr/local/lib
 from importskiosk import *
-#Brengt de gebruiker terug naar het begin scherm, verwijdert eventuele foto's zodat
-#de gebruiker weer op een vers scherm begint.
+
+#Brengt de gebruiker terug naar het begin scherm, verwijdert de gebruiker gegevens zodat
+#de volgende gebruiker weer op een vers scherm begint.
 def terug_naar_begin():
     global next
     global mail
+    global fotogemaakt
+    fotogemaakt = 0
     ventilator_off()
     sys.path.insert(0,"/home/pi/fotokiosk/fotos")
     os.system("rm /home/pi/fotokiosk/fotos/*.png")
@@ -45,61 +48,66 @@ def take_picture():
     global output
     global next
     global fotogemaakt
+    while True:
+        if(fotogemaakt == 1):
+            break
+        #Slaat de foto op, en gebruikt hiervoor de strftime library om een uniek padnaam te creëren           
+        output = strftime("/home/pi/fotokiosk/fotos/image-%d-%m %H:%M.png", gmtime())
+        camera.capture(output)
     
-    #Slaat de foto op, en gebruikt hiervoor de strftime library om een uniek padnaam te creëren           
-    output = strftime("/home/pi/fotokiosk/fotos/image-%d-%m %H:%M.png", gmtime())
-    camera.capture(output)
+        #Controlleert welke taal optie is gekozen, en roept het daarbij horende frame op.    
+        global myphoto
+        if (btn1.get() == 1):
+            #De labels en buttons voor nederlandsStapEen worden hier aangemaakt.
+            myphoto = PhotoImage(file=output)
+            Label(nederlandsStapEen,image=myphoto).place(x=0,y=0)
+            Button(nederlandsStapEen, height=2, width=12, text='Maak foto opnieuw', command=lambda:terug_naar_begin()).place(x=5, y=377)
+            Button(nederlandsStapEen, height=2, width=9, text='Bewaar foto', command=lambda:postrequest()).place(x=700, y=377)        
+            raise_frame(nederlandsStapEen)
+            fotogemaakt = 1
+        elif (btn1.get() == 2):
+            #De labels en buttons voor engelsStapEen worden hier aangemaakt.
+            myphoto = PhotoImage(file=output)
+            Label(engelsStapEen,image=myphoto).place(x=0,y=0)
+            Button(engelsStapEen, text='Retake picture', height=2, width=9, command=lambda:terug_naar_begin()).place(x=5, y=377)
+            Button(engelsStapEen, text='Save picture', height=2, width=9, command=lambda:postrequest()).place(x=700, y=377)          
+            raise_frame(engelsStapEen)
+            fotogemaakt = 1
+        else:
+            print("LMAO")
+            break
     
-    #Controlleert welke taal optie is gekozen, en roept het daarbij horende frame op.    
-    global myphoto
-    if (btn1.get() == 1):
-        #De labels en buttons voor nederlandsStapEen worden hier aangemaakt.
-        myphoto = PhotoImage(file=output)
-        Label(nederlandsStapEen,image=myphoto).place(x=0,y=0)
-        Button(nederlandsStapEen, height=2, width=12, text='Maak foto opnieuw', command=lambda:terug_naar_begin()).place(x=5, y=377)
-        Button(nederlandsStapEen, height=2, width=9, text='Bewaar foto', command=lambda:postrequest()).place(x=700, y=377)        
-        raise_frame(nederlandsStapEen)
-        fotogemaakt = 1
-    elif (btn1.get() == 2):
-        #De labels en buttons voor engelsStapEen worden hier aangemaakt.
-        myphoto = PhotoImage(file=output)
-        Label(engelsStapEen,image=myphoto).place(x=0,y=0)
-        Button(engelsStapEen, text='Retake picture', height=2, width=9, command=lambda:terug_naar_begin()).place(x=5, y=377)
-        Button(engelsStapEen, text='Save picture', height=2, width=9, command=lambda:postrequest()).place(x=700, y=377)          
-        raise_frame(engelsStapEen)
-    else:
-        print("LMAO")
+        ventilator_off()
+        mixer.music.stop()
+        camera.stop_preview()
     
-    ventilator_off()
-    mixer.music.stop()
-    camera.stop_preview()
-    
-    #Wanneer er een foto wordt gemaakt controlleert dit of er wel op next is gedrukt,
-    #en dus of degene niet op de knop drukt terwijl hij zichzelf nog niet zag.
-    if(next != 1):
-        terug_naar_begin()
+        #Wanneer er een foto wordt gemaakt controlleert dit of er wel op next is gedrukt,
+        #en dus of degene niet op de knop drukt terwijl hij zichzelf nog niet zag.
+        if(next != 1):
+            terug_naar_begin()
 
-#Stuurt een postrequest naar de website, de php code op de server haalt de foto
-#op de juiste manier binnen, en zet deze in de database.
-def postrequest():
-    global code
-    url = 'http://rummens1337.nl/includes/upload.inc.php'
-    files = {'file': open(output,'rb')}
-    values = {'submit': 1}
-    request = requests.post(url, data=values, files=files)
-    code = (request.text)
+    #Stuurt een postrequest naar de website, de php code op de server haalt de foto
+    #op de juiste manier binnen, en zet deze in de database.
+    def postrequest():
+        global code
+        url = 'http://rummens1337.nl/includes/upload.inc.php'
+        files = {'file': open(output,'rb')}
+        values = {'submit': 1}
+        request = requests.post(url, data=values, files=files)
+        code = (request.text)
     
-    taal = btn1.get()
-    if(taal == 1):
-        Label(nederlandsStapTwee, text=code, textvariable=code).place(x=150, y=350)
-        raise_frame(nederlandsStapTwee)
-        mixer.music.load('/home/pi/fotokiosk/thankyou_eng.mp3')
-        mixer.music.play()
-    elif(taal == 2):
-        Label(engelsStapTwee, text=code, textvariable=code).place(x=150, y=350)
-        raise_frame(engelsStapTwee)
-    else:
-        terug_naar_begin()
+        taal = btn1.get()
+        if(taal == 1):
+            Label(nederlandsStapTwee, text=code, textvariable=code).place(x=150, y=350)
+            raise_frame(nederlandsStapTwee)
+            mixer.music.load('/home/pi/fotokiosk/thankyou_eng.mp3')
+            mixer.music.play()
+        elif(taal == 2):
+            Label(engelsStapTwee, text=code, textvariable=code).place(x=150, y=350)
+            raise_frame(engelsStapTwee)
+        else:
+            terug_naar_begin()
+            
         
     
 #verstuurt data naar E-mail als de gebruiker dit aangeeft.
@@ -132,9 +140,10 @@ def tellFunFact():
     global funfactNr
     if(funfactNr == 6):
         funfactNr = 1
+        
     #roept klasse Funfact aan met funfactNr als argument    
     Funfact(funfactNr);
-    funfactNr = funfactNr +1
+    funfactNr += 1
 
 #Selecteert welke toets is ingedrukt op het keyboard.
 def select(value):
@@ -177,7 +186,7 @@ w = 800
 h = 480
 x = 0
 y = 0
-#root.overrideredirect(1)
+root.overrideredirect(1)
 root.geometry("%dx%d+%d+%d" % (w, h, x, y))
 
 '''Alle frames die nodig zijn worden hieronder aangemaakt.
