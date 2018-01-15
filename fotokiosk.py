@@ -6,8 +6,9 @@ from importskiosk import *
 def terug_naar_begin():
     global next
     global mail
-    sys.path.insert(0,"/home/pi/fotokiosk")
-    os.system("rm *.png")
+    ventilator_off()
+    sys.path.insert(0,"/home/pi/fotokiosk/fotos")
+    os.system("rm /home/pi/fotokiosk/fotos/*.png")
     next = 0;
     mail.set('')
     camera.stop_preview()
@@ -15,15 +16,17 @@ def terug_naar_begin():
     raise_frame(eersteFrame)
     btn1.set(5)
     print(btn1.get())
+    ventilator_off()
+    
 #start camera, en checkt of er op next is gedrukt.
 #next wordt vervolgens gecheckt in take_picture()
 def start_preview():
-    print(btn1.get())
     if(btn1.get() != 2 and btn1.get() != 1):
+        ventilator_off()
         camera.stop_preview()
-        mixer.music.stop()
         terug_naar_begin()
         
+    ventilator_on()    
     global next
     next = 1;
     mixer.init()
@@ -39,33 +42,38 @@ def start_preview():
 
 #maakt de foto, slaat deze op d.m.v. output.
 def take_picture():
-        
-    #Slaat de foto op, en gebruikt hiervoor de strftime library om een uniek padnaam te creëren   
     global output
-    mixer.music.stop()
-    output = strftime("/home/pi/fotokiosk/image-%d-%m %H:%M.png", gmtime())
-    camera.capture(output)
-    camera.stop_preview()
+    global next
+    global fotogemaakt
     
+    #Slaat de foto op, en gebruikt hiervoor de strftime library om een uniek padnaam te creëren           
+    output = strftime("/home/pi/fotokiosk/fotos/image-%d-%m %H:%M.png", gmtime())
+    camera.capture(output)
+    
+    #Controlleert welke taal optie is gekozen, en roept het daarbij horende frame op.    
     global myphoto
-    #Controlleert welke taal optie is gekozen, en roept het daarbij horende frame op.
     if (btn1.get() == 1):
         #De labels en buttons voor nederlandsStapEen worden hier aangemaakt.
         myphoto = PhotoImage(file=output)
         Label(nederlandsStapEen,image=myphoto).place(x=0,y=0)
-        Button(nederlandsStapEen, text='Maak foto opnieuw', command=lambda:terug_naar_begin()).place(x=5, y=390)
-        Button(nederlandsStapEen, text='Bewaar foto', command=lambda:postrequest()).place(x=700, y=390)        
+        Button(nederlandsStapEen, height=2, width=12, text='Maak foto opnieuw', command=lambda:terug_naar_begin()).place(x=5, y=377)
+        Button(nederlandsStapEen, height=2, width=9, text='Bewaar foto', command=lambda:postrequest()).place(x=700, y=377)        
         raise_frame(nederlandsStapEen)
+        fotogemaakt = 1
     elif (btn1.get() == 2):
         #De labels en buttons voor engelsStapEen worden hier aangemaakt.
         myphoto = PhotoImage(file=output)
         Label(engelsStapEen,image=myphoto).place(x=0,y=0)
-        Button(engelsStapEen, text='Retake picture', command=lambda:terug_naar_begin()).place(x=5, y=390)
-        Button(engelsStapEen, text='Save picture', command=lambda:postrequest()).place(x=700, y=390)          
+        Button(engelsStapEen, text='Retake picture', height=2, width=9, command=lambda:terug_naar_begin()).place(x=5, y=377)
+        Button(engelsStapEen, text='Save picture', height=2, width=9, command=lambda:postrequest()).place(x=700, y=377)          
         raise_frame(engelsStapEen)
     else:
-        terug_naar_begin()
-        
+        print("LMAO")
+    
+    ventilator_off()
+    mixer.music.stop()
+    camera.stop_preview()
+    
     #Wanneer er een foto wordt gemaakt controlleert dit of er wel op next is gedrukt,
     #en dus of degene niet op de knop drukt terwijl hij zichzelf nog niet zag.
     if(next != 1):
@@ -94,13 +102,14 @@ def postrequest():
         terug_naar_begin()
         
     
-#verstuurd data naar E-mail als de gebruiker dit aangeeft.
+#verstuurt data naar E-mail als de gebruiker dit aangeeft.
 def send_mail():
     #Roept klasse sendmail aan en geeft dit als input voor het versturen van de foto
     email = mail.get()
     taal = btn1.get()
     subject = 'Fotokiosk - Amsterdam'
     Sendmail(email,subject,output,code,taal);
+    raise_frame(nederlandsStapTwee)
     
 #bekijkt de status van de digital input ( = 0 of 1 )
 #als input == 1: maak foto.
@@ -117,17 +126,39 @@ def onAttachHandler(e):
 #Wanneer deze functie wordt aangeroepen, wordt de frame die ingevuld is, aangeroepen
 def raise_frame(frame):
     frame.tkraise()
-def handle_click():
-    print("WORKS")
+
+#vertelt een funfact (audio)
+def tellFunFact():
+    global funfactNr
+    if(funfactNr == 6):
+        funfactNr = 1
+    #roept klasse Funfact aan met funfactNr als argument    
+    Funfact(funfactNr);
+    funfactNr = funfactNr +1
+
+#Selecteert welke toets is ingedrukt op het keyboard.
+def select(value):
+    if value == "<-":
+        entry.delete(len(entry.get())-1)
+    else:
+        entry.insert(END, value)
+
+def annuleer_mail():
+    raise_frame(nederlandsStapTwee)
+
+#zorgt ervoor dat de ventilator standaard uit staat
+ventilator_off()
 
 #Maakt een root window met titel aan
 root = Tk()
 root.title("Corendon Fotokiosk")
 
 #variabelen die nodig zijn
-nlVlag = PhotoImage(file="netherlands-Flag.jpg")
-enVlag = PhotoImage(file="united-Kingdom-flag-icon.jpg")
-logo = PhotoImage(file="corendonTransparant.jpg")
+nlVlag = PhotoImage(file="netherlands-Flag.png")
+enVlag = PhotoImage(file="united-Kingdom-flag-icon.png")
+achtergrond = PhotoImage(file="achtergrond1.png")
+clickme = PhotoImage(file="clickme.png")
+qrcode = PhotoImage(file="qrcode3.png")
 camera = PiCamera()
 camera.resolution = (800, 480)
 camera.hflip = True
@@ -135,8 +166,10 @@ output= ""
 btn1 = IntVar()
 next = IntVar()
 mail = StringVar()
-code = IntVar()
-
+code = 0
+fotogemaakt = 0
+value = ""
+funfactNr = 2
 
 #De geometry (resolutie e.d.) voor de root window
 w, h = root.winfo_screenwidth(), root.winfo_screenheight()
@@ -171,41 +204,72 @@ for frame in (eersteFrame, nederlandsStapEen, nederlandsStapTwee, nederlandsStap
     frame.grid(row=0, column=0, sticky='news')
     
 #Alle widgets van de eerste frame (eersteFrame) en de plaatsing van de widgets
-Radiobutton(eersteFrame, text="Nederlands", value=1, variable=btn1, image=nlVlag, indicatoron=0).place(x=236, y=260)
-Radiobutton(eersteFrame, text="Engels", value=2, variable=btn1, image=enVlag, indicatoron=0).place(x=436, y=260)
+Label(eersteFrame,image=achtergrond).place(x=0,y=0)
+Radiobutton(eersteFrame, bg="#FF3333", activebackground="#FF3333", text="Nederlands", value=1, variable=btn1, image=nlVlag, indicatoron=0).place(x=236, y=260)
+Radiobutton(eersteFrame, bg="#FF3333", activebackground="#FF3333", text="Engels", value=2, variable=btn1, image=enVlag, indicatoron=0).place(x=436, y=260)
 nextKnop = Button(eersteFrame, bg="yellow", text='Next', command=lambda:start_preview()).place(x=700, y=320)  
-Label(eersteFrame, text='Choose your language').place(x=345, y=220)
+Label(eersteFrame, bg="yellow", text='Choose your language').place(x=345, y=230)
 Button(eersteFrame, text='Make picture',command=lambda:take_picture()).place(x=200,y=200)
+Button(eersteFrame, bg="#FF3333",image=clickme,width = 100, height = 100, command=lambda:tellFunFact()).place(x=100,y=100)
+
 #Frame nederlandsStapEen
 '''De labels en buttons worden aangemaakt in "def take_picture()"'''
 
 #Frame nederlandsStapTwee
-Label(nederlandsStapTwee, text='FRAME 4')
-Button(nederlandsStapTwee, text='Goto to frame 1', command=lambda:raise_frame(eersteFrame))
-Label(nederlandsStapTwee, image=logo).place(x=150, y=50)
-Label(nederlandsStapTwee, text="U kunt uw foto terugvinden op www.rummens1337.nl").place(x=20, y=250)
-Label(nederlandsStapTwee, text="door onderstaande code op de website in te voeren").place(x=25, y=268)
-Label(nederlandsStapTwee, text="Dit is uw code:").place(x=120, y=325)
-Label(nederlandsStapTwee, text="Of vul uw e-mail hieronder in:").place(x=320, y=325)
-Entry(nederlandsStapTwee, width=40, textvariable=mail).place(x=270, y=350)
-Button(nederlandsStapTwee, bg="yellow" , text="Verstuur!", command=send_mail).place(x=365, y=380)
+Label(nederlandsStapTwee, image=achtergrond).place(x=0,y=0)
+Button(nederlandsStapTwee, text='Go to frame 1', command=lambda:raise_frame(eersteFrame))
+Label(nederlandsStapTwee, bg="#FF3333", text="U kunt uw foto terugvinden op www.rummens1337.nl").place(x=20, y=250)
+Label(nederlandsStapTwee, bg="#FF3333", text="door onderstaande code op de website in te voeren").place(x=25, y=268)
+Label(nederlandsStapTwee, bg="#FF3333", text="Dit is uw code:").place(x=120, y=325)
+Label(nederlandsStapTwee, bg="#FF3333", text="Of vul eventueel uw e-mail in:").place(x=320, y=325)
+Button(nederlandsStapTwee, bg="yellow" , text="Vul mail in!", command=lambda:raise_frame(nederlandsStapDrie)).place(x=365, y=380)
 Button(nederlandsStapTwee, bg="yellow" , text="Volgende", command=terug_naar_begin).place(x=700,y=50)
-
+Label(nederlandsStapTwee, image=qrcode).place(x=600, y=250)
 #Frame engelsStapEen
 '''De labels en buttons worden aangemaakt in "def take_picture()"'''
 
 #Frame engelsStapTwee
 Label(engelsStapTwee, text='FRAME 4')
 Button(engelsStapTwee, text='Goto to frame 1', command=lambda:raise_frame(eersteFrame))
-Label(engelsStapTwee, image=logo).place(x=150, y=50)
-Label(engelsStapTwee, text="You can find your photo at www.rummens1337.nl").place(x=20, y=250)
-Label(engelsStapTwee, text="By entering your personal code").place(x=20, y=268)
-Label(engelsStapTwee, text="This is your code:").place(x=120, y=325)
-Label(engelsStapTwee, text="Or fill in your E-mail here:").place(x=320, y=325)
-Entry(engelsStapTwee, width=40, textvariable=mail).place(x=270, y=350)
+Label(engelsStapTwee, image=achtergrond).place(x=0, y=0)
+Label(engelsStapTwee, bg="#FF3333", text="You can find your photo at www.rummens1337.nl").place(x=20, y=250)
+Label(engelsStapTwee, bg="#FF3333", text="By entering your personal code").place(x=20, y=268)
+Label(engelsStapTwee, bg="#FF3333", text="This is your code:").place(x=120, y=325)
+Label(engelsStapTwee, bg="#FF3333", text="Or fill in your E-mail here:").place(x=320, y=325)
 Button(engelsStapTwee, bg="yellow" , text="Send!", command=send_mail).place(x=365, y=380)
 Button(engelsStapTwee, bg="yellow" , text="Next", command=terug_naar_begin).place(x=700,y=50)
+Label(engelsStapTwee, image=qrcode).place(x=600, y=250)
 
+#nederlandsStapDrie (Sendmail)
+buttons = [
+    'q','w','e','r','t','y','u','i','o','p','<-','7','8','9',
+    'a','s','d','f','g','h','j','k','l','-',' ','4','5','6',
+    'z','x','c','v','b','n','m','@','_','.',' ','1','2','3',
+    ]
+
+Label(nederlandsStapDrie,image=achtergrond).place(x=0,y=0)
+entry = Entry(nederlandsStapDrie, textvariable=mail, width = 40)
+entry.grid(row = 5, columnspan = 20)
+button = Button(nederlandsStapDrie, text="Verstuur!", command=send_mail).grid(row=7, columnspan =2,column=8)
+Button(nederlandsStapDrie,text="Annuleer",command=annuleer_mail).grid(row=7,columnspan=2,column= 4)
+varRow = 2
+varColumn = 0
+
+for button in buttons:
+
+    command = lambda x=button: select(x)
+    if button != "Space":
+        Button(nederlandsStapDrie, text = button, width = 5, bg="#000000", fg="#ffffff",
+               activebackground="#ffff8f", activeforeground="#000990", relief='raised',
+               padx=4, pady=4, bd=4, command=command).grid(row=varRow, column=varColumn)
+
+        varColumn+=1
+        if varColumn > 13 and varRow == 2:
+            varColumn = 0
+            varRow+=1
+        if varColumn > 13 and varRow == 3:
+            varColumn = 0
+            varRow+=1
 
 raise_frame(eersteFrame)
 root.mainloop()
