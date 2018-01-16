@@ -1,13 +1,13 @@
 <?php
 //zet het weergeven van errors aan
-ini_set('display_errors', true);
+ini_set('display_errors', false);
 
 //maakt het mogelijk om "$conn" te gebruiken, dit is als het ware de verbinding
 //tussen de database en de pi. hierin staat ook het wachtwoord beschreven.
 include_once '/var/www/html/includes/dbconn.inc.php';
 
 //Slaat de opgegeven code op in "$code" 
-$code = mysqli_real_escape_string($conn, $_POST['usercode']);
+$code = mysqli_real_escape_string($conn, $_POST['usercode'] ?: $_GET['code']);
 
 //als er een error is stopt het programma en geeft de error weer.
 if ($conn->connect_error) {
