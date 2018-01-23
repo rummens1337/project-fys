@@ -20,3 +20,9 @@ from ventilator import *
 from pyqrcode import *
 import pypng as png
 from funfacts import Funfact
+
+#voltageinput
+from Phidget22.Devices.VoltageInput import *
+from Phidget22.PhidgetException import *
+from Phidget22.Phidget import *
+from Phidget22.Net import *
