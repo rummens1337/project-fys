@@ -1,9 +1,12 @@
 class Sendmail:
     def __init__(self,email,subject,filename,code,taal):
+        #voor versturen van de E-mail
         import smtplib
+        #MIME staat voor "Multipurpose Internet Mail Extension"
         from email.mime.text import MIMEText
         from email.mime.multipart import MIMEMultipart
         from email.mime.base import MIMEBase
+        #
         from email import encoders
         
         #input voor de klasse
@@ -44,22 +47,33 @@ You can download your photo by following these steps:
             ''')
             
             
-            
+        #Voegt de body toe aan msg object als text/plain
         msg.attach(MIMEText(body,'plain'))
-
-        filename = self.filename
+        
+        #voegt foto toe als attachment
         attachment = open(self.filename,'rb')
 
+        #maakt van de foto een MIMEBase object
         part = MIMEBase('application','octect-stream')
         part.set_payload((attachment).read())
+        
+        #encode het MIMEBase object in base64
         encoders.encode_base64(part)
         part.add_header('Content-Disposition',"attachment; filename= Corendon.jpg")
-
+        
+        #voegt de attachment toe aan het msg object
         msg.attach(part)
+        
+        #maakt van msg een string, en voegt deze toe aan text.
         text = msg.as_string()
+        
+        #instellingen voor het versturen van de email
         server = smtplib.SMTP('smtp.live.com',25)
         server.starttls()
         server.login('corendonfys@hotmail.com','IT103@FYS')
 
+        #verstuurd de email naar de gebruiker, ook een kopie naar ons
         server.sendmail(email_from,email_from,text)
+        
+        #verbreekt de verbinding.
         server.quit()
